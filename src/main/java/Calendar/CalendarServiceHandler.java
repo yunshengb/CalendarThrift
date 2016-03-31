@@ -158,7 +158,7 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 		}
 		String rtn = "";
 		for (String s : getEvents()) {
-			rtn += s + "\t";
+			rtn += s + "\n";
 		}
 		return rtn;
 	}
