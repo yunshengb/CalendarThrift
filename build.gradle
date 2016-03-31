@@ -6,6 +6,12 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 version = '1.0'
 
+run {
+    if( project.hasProperty('args')) {
+        args project.args.split('\\s')
+    }
+}
+
 repositories {
     mavenCentral()
 }
