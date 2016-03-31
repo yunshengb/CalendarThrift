@@ -2,4 +2,5 @@
 .gradle/*
 build/*
 CalendarClient/*.class
+CalendarClient/thrift/*.class
 CalendarClient/.*

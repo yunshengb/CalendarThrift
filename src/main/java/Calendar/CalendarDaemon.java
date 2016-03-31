@@ -10,7 +10,7 @@ import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
 // Generated code
-import edu.umich.clarity.thrift.CalendarService;
+import thrift.*;
 
 /**
 * Starts the Calendar server and listens for requests.
@@ -28,7 +28,7 @@ public class CalendarDaemon {
 	* delegates processing to the handler, and writes the response
 	* using the output protocol.
 	*/
-	public static CalendarService.Processor<CalendarServiceHandler> processor;
+	public static LucidaService.Processor<CalendarServiceHandler> processor;
 
 	/** 
 	* Entry point for Calendar.
@@ -37,7 +37,7 @@ public class CalendarDaemon {
 	*/
 	public static void main(String [] args) {
 		try {
-			int tmp_port = 9091;
+			int tmp_port = 8081;
 			if (args.length == 1) {
 				tmp_port = Integer.parseInt(args[0].trim());
 			} else {
@@ -51,7 +51,7 @@ public class CalendarDaemon {
 			// that was originally specified in the thrift file.
 			// When it's called, an Open Ephyra object is created.
 			handler = new CalendarServiceHandler();
-			processor = new CalendarService.Processor<CalendarServiceHandler>(handler);
+			processor = new LucidaService.Processor<CalendarServiceHandler>(handler);
 			Runnable simple = new Runnable() {
 				// This is the code that the thread will run.
 				public void run() {
@@ -72,7 +72,7 @@ public class CalendarDaemon {
 	* and communication with the handler once a request is received.
 	* @param port the port at which the Calendar service will listen.
 	*/
-	public static void simple(CalendarService.Processor processor, final int port) {
+	public static void simple(LucidaService.Processor processor, final int port) {
 		try {
 			// Create a multi-threaded server: TNonblockingServer.
 			TNonblockingServerTransport transport = new TNonblockingServerSocket(port);
@@ -84,7 +84,7 @@ public class CalendarDaemon {
 
 			Thread t1 = new Thread(new Runnable() {
 				public void run() {
-					System.out.println("Starting Calendar at port " + port + "...");
+					System.out.println("Starting Calendar server at port " + port + "...");
 					server.serve();
 				}
 			});
