@@ -31,6 +31,20 @@
         <pathelement location="lib/slf4j-api-1.7.12.jar"/>
         <pathelement location="lib/stanford-corenlp-full-2015-12-09/stanford-corenlp-3.6.0-models.jar"/>
         <pathelement location="lib/stanford-corenlp-full-2015-12-09/stanford-corenlp-3.6.0.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/ejml-0.23.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/javax.json-api-1.0-sources.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/javax.json.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/joda-time-2.9-sources.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/joda-time.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/jollyday-0.4.7-sources.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/jollyday.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/protobuf.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/slf4j-api.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/slf4j-simple.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/stanford-corenlp-3.6.0-javadoc.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/stanford-corenlp-3.6.0-sources.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/xom-1.2.10-src.jar"/>
+        <pathelement location="lib/stanford-corenlp-full-2015-12-09/xom.jar"/>
     </path>
     <target name="init">
         <mkdir dir="build/classes/main"/>
@@ -80,13 +94,18 @@
         <antcall target="build"/>
     </target>
     <target name="CalendarDaemon">
-        <java classname="Calendar.CalendarDaemon" failonerror="true" fork="yes">
+        <java classname="calendar.CalendarDaemon" failonerror="true" fork="yes">
             <classpath refid="Calendar.classpath"/>
         </java>
     </target>
     <target name="TextProcessor">
         <java classname="nlp.TextProcessor" failonerror="true" fork="yes">
-            <arg line="&quot;Three interesting dates are 18 Feb 1997, the 20th of july and 4 days from today.&quot;"/>
+            <arg line="&quot;What is on my Google calendar from tomorrow 9pm to next Sunday night?&quot;"/>
+            <classpath refid="Calendar.classpath"/>
+        </java>
+    </target>
+    <target name="CalendarClient">
+        <java classname="test.CalendarClient" failonerror="true" fork="yes">
             <classpath refid="Calendar.classpath"/>
         </java>
     </target>

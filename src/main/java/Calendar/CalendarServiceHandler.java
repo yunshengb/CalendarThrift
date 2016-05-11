@@ -14,10 +14,12 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.*;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,8 +70,12 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 	 */
 	public static Credential authorize() throws IOException {
 		// Load client secrets.
-		InputStream in =
-				Calendar.class.getResourceAsStream("/Users/yba/Documents/U/Sirius/Calendar/client_secret.json");
+		InputStream in = new FileInputStream("/Users/yba/Documents/U/Sirius/Calendar/src/main/resources/client_secret.json");
+				//alendar.class.getResourceAsStream("../../resources/client_secret.json");
+		System.out.println(in);
+//		if (in == null) {
+//			System.exit(1);
+//		}
 		GoogleClientSecrets clientSecrets =
 				GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
@@ -115,11 +121,10 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 
 			// List the next 10 events from the primary calendar.
 			DateTime now = new DateTime(System.currentTimeMillis());
-			@SuppressWarnings("deprecation")
 			Events events = service.events().list("primary")
-					.setMaxResults(10)
+					.setMaxResults(100) // What if the user wants too many events?
 					.setTimeMin(now)
-					//.setTimeMax(new DateTime(new Date(2016, 5, 22)))
+					.setTimeMax(new DateTime(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse("2016-05-26 14:01")))
 					.setOrderBy("startTime")
 					.setSingleEvents(true)
 					.execute();
@@ -140,6 +145,9 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 			}
 			return rtn;
 		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		} catch (ParseException e) {
 			e.printStackTrace();
 			return null;
 		}
