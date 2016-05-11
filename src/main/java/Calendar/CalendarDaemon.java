@@ -1,4 +1,4 @@
-package Calendar;
+package calendar;
 
 // Thrift java libraries 
 import org.apache.thrift.server.TNonblockingServer;

@@ -4,3 +4,5 @@ build/*
 CalendarClient/*.class
 CalendarClient/thrift/*
 CalendarClient/.*
+stanford-corenlp-full-2015-12-09
+*.mp4

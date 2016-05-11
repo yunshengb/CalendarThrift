@@ -12,6 +12,11 @@ run {
     }
 }
 
+task copyRuntimeLibs(type: Copy) {
+  into "libsTest"
+  from configurations
+}
+
 repositories {
     mavenCentral()
 }

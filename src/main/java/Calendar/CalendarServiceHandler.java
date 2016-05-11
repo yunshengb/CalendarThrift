@@ -1,4 +1,4 @@
-package Calendar;
+package  calendar;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -11,13 +11,13 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.client.util.DateTime;
-
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Date;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,18 +27,18 @@ import thrift.*;
 public class CalendarServiceHandler implements LucidaService.Iface {
 	/** Application name. */
 	private static final String APPLICATION_NAME =
-	"Google Calendar Thrift";
+			"Google Calendar Thrift";
 
 	/** Directory to store user credentials for this application. */
 	private static final java.io.File DATA_STORE_DIR = new java.io.File(
-		System.getProperty("user.home"), ".credentials/calendar-java.json");
+			System.getProperty("user.home"), ".credentials/calendar-java.json");
 
 	/** Global instance of the {@link FileDataStoreFactory}. */
 	private static FileDataStoreFactory DATA_STORE_FACTORY;
 
 	/** Global instance of the JSON factory. */
 	private static final JsonFactory JSON_FACTORY =
-	JacksonFactory.getDefaultInstance();
+			JacksonFactory.getDefaultInstance();
 
 	/** Global instance of the HTTP transport. */
 	private static HttpTransport HTTP_TRANSPORT;
@@ -49,7 +49,7 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 	 * at ~/.credentials/calendar-java.json
 	 */
 	private static final List<String> SCOPES =
-	Arrays.asList(CalendarScopes.CALENDAR_READONLY);
+			Arrays.asList(CalendarScopes.CALENDAR_READONLY);
 
 	static {
 		try {
@@ -69,21 +69,21 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 	public static Credential authorize() throws IOException {
 		// Load client secrets.
 		InputStream in =
-		Calendar.class.getResourceAsStream("/client_secret.json");
+				Calendar.class.getResourceAsStream("/Users/yba/Documents/U/Sirius/Calendar/client_secret.json");
 		GoogleClientSecrets clientSecrets =
-		GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+				GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
 		// Build flow and trigger user authorization request.
 		GoogleAuthorizationCodeFlow flow =
-		new GoogleAuthorizationCodeFlow.Builder(
-			HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+				new GoogleAuthorizationCodeFlow.Builder(
+						HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
 		.setDataStoreFactory(DATA_STORE_FACTORY)
 		.setAccessType("offline")
 		.build();
 		Credential credential = new AuthorizationCodeInstalledApp(
-			flow, new LocalServerReceiver()).authorize("user");
+				flow, new LocalServerReceiver()).authorize("user");
 		System.out.println(
-			"Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
+				"Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
 		return credential;
 	}
 
@@ -96,14 +96,14 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 	getCalendarService() throws IOException {
 		Credential credential = authorize();
 		return new com.google.api.services.calendar.Calendar.Builder(
-			HTTP_TRANSPORT, JSON_FACTORY, credential)
+				HTTP_TRANSPORT, JSON_FACTORY, credential)
 		.setApplicationName(APPLICATION_NAME)
 		.build();
 	}
 
 	/** 
-	* Returns the upcoming events.
-	*/
+	 * Returns the upcoming events.
+	 */
 	public List<String> getEvents() {
 		List<String> rtn = new ArrayList<String>();
 		try {
@@ -111,16 +111,18 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 			// Note: Do not confuse this class with the
 			//   com.google.api.services.calendar.model.Calendar class.
 			com.google.api.services.calendar.Calendar service =
-			getCalendarService();
+					getCalendarService();
 
 			// List the next 10 events from the primary calendar.
 			DateTime now = new DateTime(System.currentTimeMillis());
+			@SuppressWarnings("deprecation")
 			Events events = service.events().list("primary")
-			.setMaxResults(10)
-			.setTimeMin(now)
-			.setOrderBy("startTime")
-			.setSingleEvents(true)
-			.execute();
+					.setMaxResults(10)
+					.setTimeMin(now)
+					//.setTimeMax(new DateTime(new Date(2016, 5, 22)))
+					.setOrderBy("startTime")
+					.setSingleEvents(true)
+					.execute();
 			List<Event> items = events.getItems();
 			if (items.size() == 0) {
 				System.out.println("No upcoming events found.");
@@ -153,7 +155,7 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 
 	public String infer(String LUCID, QuerySpec query) {
 		if (query.content.isEmpty() ||
-		 !query.content.get(0).type.toLowerCase().equals("calendar")) {
+				!query.content.get(0).type.toLowerCase().equals("calendar")) {
 			throw new IllegalArgumentException();
 		}
 		String rtn = "";
