@@ -5,13 +5,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.*;
@@ -43,7 +45,7 @@ public class TextProcessor {
 		pieplines.add(pipeline);
 	}
 
-	private void run(String text) {
+	public String[] parse(String text) {
 		TreeSet<Temporal> has_seen = new TreeSet<Temporal>(new TemporalComparator());
 		TreeSet<Time> times = new TreeSet<Time>();
 		for (AnnotationPipeline pipeline : pieplines) {
@@ -66,36 +68,72 @@ public class TextProcessor {
 						} catch (NullPointerException e) {}
 					}
 				}
-//								System.out.println("@@@@@");
-//								System.out.println("Token text : " + cm);
-//								System.out.println("Temporal Value : " + temporal);
-//								System.out.println("Timex type : " + temporal.getTimexType().name());
-//								try { 
-//									System.out.println("Timex range : " + temporal.getRange());
-//								} catch (Exception e) {
-//									System.out.println("Timex range : N/A");
-//								}
-								
+				//								System.out.println("@@@@@");
+				//								System.out.println("Token text : " + cm);
+				//								System.out.println("Temporal Value : " + temporal);
+				//								System.out.println("Timex type : " + temporal.getTimexType().name());
+				//								try { 
+				//									System.out.println("Timex range : " + temporal.getRange());
+				//								} catch (Exception e) {
+				//									System.out.println("Timex range : N/A");
+				//								}
+
 			}
 		}
 		if (times.size() >= 2) {
-			System.out.println("### Min " + Collections.min(times));
-			System.out.println("### Max " + Collections.max(times));
-			return;
+			return new String[] {regexNormalize(Collections.min(times).toString(), 0),
+					regexNormalize(Collections.max(times).toString(), 1)};
 		} 
 		for (Temporal temporal : has_seen) {
 			if (isReadbleTime(temporal.getRange().toString())) {
 				System.out.println("### Result " + temporal.getRange());
-				return;
+				List<String> string_list = Arrays.asList(temporal.getRange().toString().split(","));
+				String s1 = regexNormalize(string_list.get(0), 0);
+				String s2 = regexNormalize(string_list.get(1), 1);
+				if (s1.equals(s2)) {
+					if (text.contains("from") || text.contains("start") || text.contains("begin")) {
+						s2 = null;
+					} else if (text.contains("to") || text.contains("until") || text.contains("end")) {
+						s1 = null;
+					}
+				}
+				return new String[] {s1, s2};
 			}
 		}
-		
-		System.out.println("### Result: upcoming 10 events");
-		return;
+		return new String[] {"upcoming 10 events", "upcoming 10 events"};
 	}
 
 	private boolean isReadbleTime(String s) {
 		return !s.contains("UNKNOWN") && !s.contains("PXW") && !s.contains("PXD");
+	}
+
+	private static String regexNormalize(String s, int i) {
+		String rtn = "";
+		Pattern pattern_data = Pattern.compile("[0-9]{4,4}-[0-9]{2,2}-[0-9]{2,2}");
+		Matcher matcher_date = pattern_data.matcher(s);
+		if (matcher_date.find()) {
+			rtn += matcher_date.group(0);
+		}
+		Pattern pattern_time = Pattern.compile("[0-9]{2,2}:[0-9]{2,2}");
+		Matcher matcher_time = pattern_time.matcher(s);
+		if (matcher_time.find()) {
+			rtn += " ";
+			rtn += matcher_time.group(0);
+		} else if (s.contains("MO")) {
+			rtn += " 05:00"; // needs to be changed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		} else if (s.contains("AF")) {
+			rtn += " 12:00";
+		} else if (s.contains("NI")) {
+			rtn += " 18:00";
+		} else if (i == 0) {
+			rtn += " 00:00";
+		} else if (i == 1) {
+			rtn += " 23:59";
+		} else {
+			System.out.println("Error");
+		}
+
+		return rtn;
 	}
 
 	/** Example usage:
@@ -122,10 +160,12 @@ public class TextProcessor {
 			s.close();
 			for (String line : lines) {
 				System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ " + line);
-				p.run(line);
+				for (String result : p.parse(line)) {
+					System.out.println(result);
+				}
 			}
 		} else {
-			p.run(args[0]);
+			p.parse(args[0]);
 		}
 	}
 

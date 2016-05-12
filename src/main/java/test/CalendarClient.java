@@ -31,7 +31,7 @@ public class CalendarClient {
 		// Query.
 		String LUCID = "QLL";
 		final QueryInput query_input = new QueryInput("query", new ArrayList<String>() {{
-		    add("");
+		    add("What is on my Google calendar from May 14 to next Sunday night?");
 		}});
 		query_input.type = "calendar";
 		QuerySpec query_spec = new QuerySpec(new ArrayList<QueryInput>() {{

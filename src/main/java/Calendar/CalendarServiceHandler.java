@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import thrift.*;
+import nlp.TextProcessor;
 
 public class CalendarServiceHandler implements LucidaService.Iface {
 	/** Application name. */
@@ -52,11 +53,14 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 	 */
 	private static final List<String> SCOPES =
 			Arrays.asList(CalendarScopes.CALENDAR_READONLY);
+	
+	private static TextProcessor p;
 
 	static {
 		try {
 			HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 			DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
+			p = new TextProcessor();
 		} catch (Throwable t) {
 			t.printStackTrace();
 			System.exit(1);
@@ -106,11 +110,50 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 		.setApplicationName(APPLICATION_NAME)
 		.build();
 	}
+	
+	List<Event> getEventsHelper(com.google.api.services.calendar.Calendar service,
+			String[] parsed_time) throws IOException, ParseException {
+		System.out.println(parsed_time[0]);
+		System.out.println(parsed_time[1]);
+		if (parsed_time[0] == null) {
+			Events events = service.events().list("primary")
+					.setMaxResults(100) // What if the user wants too many events?
+					.setTimeMax(new DateTime(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(parsed_time[1])))
+					.setOrderBy("startTime")
+					.setSingleEvents(true)
+					.execute();
+			return events.getItems();
+		} else if (parsed_time[1] == null) {
+			Events events = service.events().list("primary")
+					.setMaxResults(100) // What if the user wants too many events?
+					.setTimeMin(new DateTime(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(parsed_time[0])))
+					.setOrderBy("startTime")
+					.setSingleEvents(true)
+					.execute();
+			return events.getItems();
+		} else if (parsed_time[0].equals("upcoming 10 events")) {
+			Events events = service.events().list("primary")
+					.setMaxResults(10) 
+					.setOrderBy("startTime")
+					.setSingleEvents(true)
+					.execute();
+			return events.getItems();
+		} else {
+			Events events = service.events().list("primary")
+					.setMaxResults(100) // What if the user wants too many events?
+					.setTimeMin(new DateTime(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(parsed_time[0])))
+					.setTimeMax(new DateTime(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(parsed_time[1])))
+					.setOrderBy("startTime")
+					.setSingleEvents(true)
+					.execute();
+			return events.getItems();
+		}
+	}
 
 	/** 
 	 * Returns the upcoming events.
 	 */
-	public List<String> getEvents() {
+	public List<String> getEvents(String[] parsed_time) {
 		List<String> rtn = new ArrayList<String>();
 		try {
 			// Build a new authorized API client service.
@@ -119,16 +162,7 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 			com.google.api.services.calendar.Calendar service =
 					getCalendarService();
 
-			// List the next 10 events from the primary calendar.
-			DateTime now = new DateTime(System.currentTimeMillis());
-			Events events = service.events().list("primary")
-					.setMaxResults(100) // What if the user wants too many events?
-					.setTimeMin(now)
-					.setTimeMax(new DateTime(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse("2016-05-26 14:01")))
-					.setOrderBy("startTime")
-					.setSingleEvents(true)
-					.execute();
-			List<Event> items = events.getItems();
+			List<Event> items = getEventsHelper(service, parsed_time);
 			if (items.size() == 0) {
 				System.out.println("No upcoming events found.");
 			} else {
@@ -167,7 +201,7 @@ public class CalendarServiceHandler implements LucidaService.Iface {
 			throw new IllegalArgumentException();
 		}
 		String rtn = "";
-		for (String s : getEvents()) {
+		for (String s : getEvents(p.parse(query.content.get(0).data.get(0)))) {
 			rtn += s + "\n";
 		}
 		return rtn;
